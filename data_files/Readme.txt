@@ -1,0 +1,2 @@
+Due to a Non-Disclosure Agreement (NDA) signed, no part of the TUH EEG Seizure Data used in this work can be shared in any form. However, the full data can be downloaded from - https://isip.piconepress.com/projects/tuh_eeg/downloads/tuh_eeg_seizure/v2.0.0/   after signing a NDA with the data provider. <br>
+Given the data, by following the data processing instructions in paper and by running the respective code of code_files/data_processing.py, all intermediate data and features can be made.
