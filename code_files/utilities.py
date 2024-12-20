@@ -3,7 +3,6 @@ import numpy as np
 import os
 import glob
 import pandas as pd
-import psycopg2
 from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
 import math
@@ -30,7 +29,6 @@ from scipy.stats import kurtosis,skew
 # function to load data(TUHEEG Metadata) from postgresql table into pandas data frames
 def load_df(table_name):
     try:
-        #conn = psycopg2.connect(host='localhost', dbname='tuheeg', user='tuheeg_user', password='tuheeg', port=5432)
         engine = create_engine('postgresql://tuheeg_user:tuheeg@localhost:5432/tuheeg')
         #loading patients data in a dataframe
         try:
@@ -45,6 +43,64 @@ def load_df(table_name):
     except Exception as ex:
         print(ex)
         return None
+        
+        
+#func to load list of pat specific df
+def load_lst_pat_spf_df(df,lst_patients):
+    df['patient'] = df.apply(lambda row: (row['uid'].split('__')[0]),axis=1)
+    df = df.loc[df['patient'].isin(lst_patients)]
+    df = df.drop("patient", axis=1)
+    return df
+    
+    
+    
+# function to add features upon the train and test set dfs
+def add_dwt_features_in_ns_df(df, lst_channels_to_save, lst_chnlwise_feat, win_dur, seiz_onset):
+    lst_excp, temp_uid = [], ''
+    # first we add all 665 columns as empty columns and later update values row-wise
+    df = df.reindex(df.columns.tolist() + lst_chnlwise_feat, axis=1)
+    for index, row in df.iterrows():
+        temp_uid = row.uid
+        raw = load_notch_filtered_eeg(row.file_path.replace('.csv','.edf').replace('.csv_bi','.edf'))
+        try:
+            F = get_dwt_features(raw, 'none', lst_channels_to_save, math.floor(row.non_seiz_onset_win_start_tm), math.floor(row.non_seiz_onset_win_start_tm + win_dur), win_dur)
+            lst_chnlwise_feat_val = []
+            for lst_item in F:
+                for ch_feat_val in lst_item:
+                    lst_chnlwise_feat_val.append(ch_feat_val)
+            for i in range(len(lst_chnlwise_feat)):
+                df.at[index, lst_chnlwise_feat[i]] = lst_chnlwise_feat_val[i]
+        except Exception as ex:
+            lst_excp.append(temp_uid)
+            pass
+    df['label'] = seiz_onset
+    return df, lst_excp
+    
+    
+    
+#func to add dwt features to a df as columns
+# function to get dwt features added in the dfs
+def get_dwt_added_features_in_ns_dfs(non_seiz_features_test_df, non_seiz_features_train_df, lst_channels_to_save, output_folder_path, win_dur):
+    # list of features based on dwt column names per electrode for all selected electrodes
+    lst_chnlwise_feat = get_lst_chnlwise_features(lst_channels_to_save)
+    
+    # get dfs with added dwt features, additionally get exception description if got any while making the features
+    #ns test
+    non_seiz_dwt_feat_test_df, lst_excp_non_seiz_test = add_dwt_features_in_ns_df(non_seiz_features_test_df, lst_channels_to_save, lst_chnlwise_feat, win_dur, 0)
+    valid_non_seiz_dwt_feat_test_df = non_seiz_dwt_feat_test_df.loc[
+        ~non_seiz_dwt_feat_test_df['uid'].isin(lst_excp_non_seiz_test)]  # 81 record with NaN removed
+    valid_non_seiz_dwt_feat_test_df.to_csv(output_folder_path + 'ns_test_10_pat_additional_dwt.csv', index=False)
+
+    #ns train
+    non_seiz_dwt_feat_train_df, lst_excp_non_seiz_train = add_dwt_features_in_ns_df(non_seiz_features_train_df,lst_channels_to_save, lst_chnlwise_feat, win_dur, 0)
+    valid_non_seiz_dwt_feat_train_df = non_seiz_dwt_feat_train_df.loc[
+        ~non_seiz_dwt_feat_train_df['uid'].isin(lst_excp_non_seiz_train)]  # 213 record with NaN removed
+    valid_non_seiz_dwt_feat_train_df.to_csv(output_folder_path + 'ns_train_10_pat_additional_dwt.csv', index=False)
+    
+    return valid_non_seiz_dwt_feat_test_df, valid_non_seiz_dwt_feat_train_df
+   
+    
+     
    
 
 # function to take a particular labeld seizure channel dataframe and compute stats related to that type of seizure
@@ -98,65 +154,8 @@ def get_seiz_stats_df(seizType_channel_df):
     return seizType_stats_df
     
     
-def get_seiz_stats_df_with_prints(seizType_channel_df,num_records):
-    ctr = 0
-    lst_pat_sess_with_seizType_chnl = list(seizType_channel_df.pstr.unique())
-    seizType = seizType_channel_df.label.values[0]
-    #count no of distinct seizure events present in 687 seizure sessions since more than one seizrue can exist 
-    #frame pstr_wise_fnsz_chnl_stats_df 
-    lst_pstr, lst_temp_top_chnl_cnt, lst_cnt_unq_chnls, lst_temp_unq_start_time_cnt, lst_lst_unq_chnls_in_val_cnt, lst_lst_unq_chnl_vals_in_val_cnt, lst_lst_unq_start_times, lst_lst_top_chnl_unq_start_times, lst_lst_seiz_duration_top_chnl, lst_lst_seiz_duration_all_chnl = [], [], [], [], [], [], [], [], [], []
-    for pstr in lst_pat_sess_with_seizType_chnl:
-        lst_pstr.append(pstr)
-        #print('\n\n')
-        temp_top_chnl_cnt, temp_cnt_unq_chnls, temp_unq_start_time_cnt, lst_unq_chnls_in_val_cnt, lst_unq_chnl_vals_in_val_cnt, lst_unq_start_times, lst_top_chnl_unq_start_times, lst_seiz_duration_top_chnl, lst_seiz_duration_all_chnl = 0, 0, 0, [], [], [], [], [], []
-        pstr_seizType_channel_df = seizType_channel_df.loc[seizType_channel_df['pstr']==pstr]
-        pstr_seizType_channel_df = pstr_seizType_channel_df[['channel','start_time','stop_time','pstr']]
-        pstr_seizType_channel_df['dur'] = round((pstr_seizType_channel_df['stop_time'] - pstr_seizType_channel_df['start_time']),2)
-        #compute session wise mean, median and minimum duration of a fnsz seizure grouped by each unq start time
-        lst_unq_start_times = list(pstr_seizType_channel_df.start_time.unique())
-        temp_unq_start_time_cnt = len(lst_unq_start_times)
-        temp_top_chnl_cnt = pstr_seizType_channel_df['channel'].value_counts()[0]
-        #print(temp_top_chnl_cnt)
-        ch = pstr_seizType_channel_df['channel'].value_counts()
-        lst_unq_chnls_in_val_cnt = ch.index.tolist()
-        #print('topmost channel of lst_unq_chnls_in_val_cnt: ',lst_unq_chnls_in_val_cnt[0])
-        red_df = pstr_seizType_channel_df.loc[pstr_seizType_channel_df['channel']==lst_unq_chnls_in_val_cnt[0]]
-        lst_top_chnl_unq_start_times = list(red_df.start_time)
-        # list of individual duration of all seiz channels in this session (uniqued..)
-        lst_seiz_duration_all_chnl = list(pstr_seizType_channel_df['dur'])
-        # duration of topmost(most frequently occuring channel in seizures for this session)
-        lst_seiz_duration_top_chnl = list(red_df.dur)
-        temp_cnt_unq_chnls = len(lst_unq_chnls_in_val_cnt) 
-        #print(lst_unq_chnls_in_val_cnt)
-        lst_unq_chnl_vals_in_val_cnt = ch.values.tolist()
-        #print(lst_unq_chnl_vals_in_val_cnt)
-        #print(pstr_seizType_channel_df)
-        #print('###################################################################')
-        lst_temp_top_chnl_cnt.append(temp_top_chnl_cnt)
-        lst_cnt_unq_chnls.append(temp_cnt_unq_chnls)
-        lst_temp_unq_start_time_cnt.append(temp_unq_start_time_cnt)
-        lst_lst_unq_chnls_in_val_cnt.append(lst_unq_chnls_in_val_cnt)
-        lst_lst_unq_chnl_vals_in_val_cnt.append(lst_unq_chnl_vals_in_val_cnt)
-        lst_lst_unq_start_times.append(lst_unq_start_times)
-        lst_lst_top_chnl_unq_start_times.append(lst_top_chnl_unq_start_times)
-        lst_lst_seiz_duration_top_chnl.append(lst_seiz_duration_top_chnl)
-        lst_lst_seiz_duration_all_chnl.append(lst_seiz_duration_all_chnl)
-        if temp_unq_start_time_cnt>temp_top_chnl_cnt: 
-           ctr+=1
-           print('\n\ntemp_top_chnl_cnt: ',temp_top_chnl_cnt)
-           print('temp_unq_start_time_cnt: ',temp_unq_start_time_cnt)
-           print('topmost channel of lst_unq_chnls_in_val_cnt: ',lst_unq_chnls_in_val_cnt[0])
-           print('temp_cnt_unq_chnls: ',temp_cnt_unq_chnls)
-           print('lst_unq_chnls_in_val_cnt: ',lst_unq_chnls_in_val_cnt)
-           print('lst_unq_chnl_vals_in_val_cnt: ',lst_unq_chnl_vals_in_val_cnt)
-           print('lst_lst_seiz_duration_top_chnl: ',lst_lst_seiz_duration_top_chnl)
-           print('lst_lst_seiz_duration_all_chnl: ',lst_seiz_duration_all_chnl)
-           print(pstr_seizType_channel_df)
-           print('###################################################################')
-           if ctr == num_records:
-              break
               
-
+# function to fetch channel wise unique seizure stop times
 def fetch_lst_unq_stop_times(lst_of_lst):
     lst, lst_unq_items = [], []
     for item in lst_of_lst:
@@ -1106,7 +1105,7 @@ def fetch_corr_with_nn(raw,lst_ch_names,tcp_ref,bos_vec,dos_vec,aos_vec,nn1,nn2,
         return c_bos_nn1,c_dos_nn1,c_aos_nn1,c_bos_nn2,c_dos_nn2,c_aos_nn2,c_bos_nn3,c_dos_nn3,c_aos_nn3,c_bos_nn4,c_dos_nn4,c_aos_nn4
         
         
-        
+# formulate primary key using patient session and time of recording
 def formulate_pstr(patient_id,session_id,session_date,t_id,tcp_ref):
     pstr = patient_id + '$' + session_id + '_' + str(session_date).split('T')[0].replace('-','_').replace(' 00:00:00','') + '$' + t_id + '$' + tcp_ref
     return pstr
