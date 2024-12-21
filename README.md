@@ -25,5 +25,4 @@ such that train_dataset_path is the path where training data is kept, test_datas
 
 <b> code_files </b> contains Python codes for data_preprocessing, feature extraction, model and an utilities file with many common functions.  <br>
 <b> data_files </b> contains a Readme.txt file with instructions. <br>
-<b> Issues if any, can be raised on github and will be resolved and answered as soon as possible. <br>
 
