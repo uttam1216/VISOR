@@ -54,6 +54,70 @@ def load_lst_pat_spf_df(df,lst_patients):
     
     
     
+# function to combine visual images in CRT module
+# combining eeg with spectral power, dwt_hmaps and pateint specific image
+def combine_pat_spf_espf_images(df,eeg_path,sp_path,dwtF_path,output_folder,sz_or_ns,test_or_train):  
+    i,sc=0,0    #sc is count of successfully saved images
+    for row in df.itertuples():
+        if 1==1:
+           i+=1
+           image_path1 = eeg_path + '/'+ sz_or_ns +'/' + row.pstrst1 + '.png'
+           image_path2 = eeg_path + '/'+ sz_or_ns +'/' + row.pstrst2 + '.png'
+           if os.path.isfile(image_path1) and os.path.isfile(image_path2):
+              image_path3 = sp_path + '/' + sz_or_ns +'/' + row.pstrst1 + '.png' 
+              image_path4 = sp_path + '/' + sz_or_ns +'/' + row.pstrst2 + '.png'
+              image_path5 = sp_path.replace('delta','theta') + '/' + sz_or_ns +'/' + row.pstrst1 + '.png'
+              image_path6 = sp_path.replace('delta','theta') + '/' + sz_or_ns +'/' + row.pstrst2 + '.png'
+              if os.path.isfile(image_path3) and os.path.isfile(image_path4):
+                    image_path7 = dwtF_path + '/'+ sz_or_ns +'/'+ row.pstrst1 + '.png'
+                    image_path8 = dwtF_path + '/'+ sz_or_ns +'/'+ row.pstrst2 + '.png'
+                    image_path9 = '/media/data/fol/visor/data_files/seiz_prop/visor/pat_spf_espf_24nov/pat_img/' + row.pstrst2.split('__')[0]+'.png'
+                    if os.path.isfile(image_path9):
+                       output_path = output_folder + '/'+ row.pstrst1.split('__')[0] + '/' + test_or_train + '/' + sz_or_ns + '/' + row.comb_pstrst + '.png'
+                       gen_output_path = output_folder + '/gen_pat/' + test_or_train + '/' + sz_or_ns + '/' + row.comb_pstrst + '.png'
+                       excp_ctr, excp_files = 0, []
+                       try:
+                          image1,image2,image3,image4 = Image.open(image_path1),Image.open(image_path2),Image.open(image_path3),Image.open(image_path4)
+                          image5,image6,image7,image8 = Image.open(image_path5),Image.open(image_path6),Image.open(image_path7),Image.open(image_path8)
+                          image9 = Image.open(image_path9)
+                          # Get the dimensions of the images
+                          width1, height1 = image1.size
+                          width2, height2 = image3.size
+                          #width3, height3 = image_corr1.size
+                          width4, height4 = image7.size
+                          width9, height9 = image9.size
+                          # Determine the size of the combined image
+                          combined_width = max(width1*2,width4*2)  # earlier width2 was taken
+                          combined_height = height1 + height4 + max(height2,height9)
+                          # Create a new image with the calculated size
+                          combined_image = Image.new('RGBA', (combined_width, combined_height), (0, 0, 0, 0))
+                          # Paste the first image onto the combined image
+                          combined_image.paste(image1, (0, 0))
+                          combined_image.paste(image2, (width1, 0))
+                          combined_image.paste(image3, (0, height1))
+                          combined_image.paste(image5, (width2, height1))
+                          combined_image.paste(image9, (width2*2+20, height1))
+                          combined_image.paste(image4, (width2*2 + width9 + 20, height1))
+                          combined_image.paste(image6, (width2*3 + width9 + 20, height1))
+                          #combined_image.paste(image_corr1, (width2, height1))
+                          #combined_image.paste(image_corr2, (width2+width3+width2, height1))
+                          combined_image.paste(image7, (0, max(height1+height2,height1+height9)))
+                          combined_image.paste(image8, (width1, max(height1+height2,height1+height9)))
+                          # Save the combined image
+                          if os.path.isfile(output_path):
+                             sc+=1
+                          else:   
+                             combined_image.save(output_path)
+                             combined_image.save(gen_output_path)
+                             sc+=1
+                       except Exception as ex:
+                          print(ex) 
+
+    return sc
+    
+    
+    
+    
 # function to add features upon the train and test set dfs
 def add_dwt_features_in_ns_df(df, lst_channels_to_save, lst_chnlwise_feat, win_dur, seiz_onset):
     lst_excp, temp_uid = [], ''

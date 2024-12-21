@@ -733,5 +733,188 @@ def get_plv(edf_file_path, lst_channels_to_save, st, win_dur, e1, e2):
     #print('Phase Locking Value (PLV) between e1 and e2 for delta(0.5-4), theta(4-8), alpha(8-12) and beta(12-30) bands are:', plv_d, plv_t, plv_a, plv_b)
     return plv_d, plv_t, plv_a, plv_b
     
+
+### function to add imf based hilbert energy feature (of first 4 imfs) corresponding to a channel & 4 phase synchronization features corresponding to a node pair in a df for each freq band)
+def add_e_imfs_plv(df,seiz):
+    #this function to be run when the last column if the input df contains the label
+    new_df = df.iloc[:,:-1]
+    lst_i_e1_d1, lst_i_e1_d2, lst_i_e1_d3, lst_i_e1_d4 = [],[],[],[]
+    lst_i_e1_t1, lst_i_e1_t2, lst_i_e1_t3, lst_i_e1_t4 = [],[],[],[]
+    lst_i_e1_a1, lst_i_e1_a2, lst_i_e1_a3, lst_i_e1_a4 = [],[],[],[] 
+    lst_i_e1_b1, lst_i_e1_b2, lst_i_e1_b3, lst_i_e1_b4 = [],[],[],[]
+    lst_uid, lst_plv_d, lst_plv_t, lst_plv_a, lst_plv_b = [],[],[],[],[]
+    for row in new_df.itertuples(index=False):
+        #current df format of row nos row[1] - onset, 2-win_st, 3-file, 4-uid
+        #format of input in function get_imfs_based_energy(edf_file_path, lst_channels_to_save, st, win_dur)
+        i_e1_d_en, i_e1_t_en, i_e1_a_en, i_e1_b_en = get_imfs_based_energy(row[3], lst_channels_to_save, row[2], 6)
+        plv_d, plv_t, plv_a, plv_b = get_plv(row[3], lst_channels_to_save, row[2], 6)
+        
+        lst_uid.append(row[4])
+        
+        lst_i_e1_d1.append(get_val_wE(i_e1_d_en,0))
+        lst_i_e1_d2.append(get_val_wE(i_e1_d_en,1))
+        lst_i_e1_d3.append(get_val_wE(i_e1_d_en,2))
+        lst_i_e1_d4.append(get_val_wE(i_e1_d_en,3))     
+        lst_i_e1_t1.append(get_val_wE(i_e1_t_en,0))
+        lst_i_e1_t2.append(get_val_wE(i_e1_t_en,1))
+        lst_i_e1_t3.append(get_val_wE(i_e1_t_en,2))
+        lst_i_e1_t4.append(get_val_wE(i_e1_t_en,3))
+        lst_i_e1_a1.append(get_val_wE(i_e1_a_en,0))
+        lst_i_e1_a2.append(get_val_wE(i_e1_a_en,1))
+        lst_i_e1_a3.append(get_val_wE(i_e1_a_en,2))
+        lst_i_e1_a4.append(get_val_wE(i_e1_a_en,3))
+        lst_i_e1_b1.append(get_val_wE(i_e1_b_en,0))
+        lst_i_e1_b2.append(get_val_wE(i_e1_b_en,1))
+        lst_i_e1_b3.append(get_val_wE(i_e1_b_en,2))
+        lst_i_e1_b4.append(get_val_wE(i_e1_b_en,3))
+        
+        lst_plv_d.append(round(plv_d,3))
+        lst_plv_t.append(round(plv_t,3))
+        lst_plv_a.append(round(plv_a,3))
+        lst_plv_b.append(round(plv_b,3))
     
+    new_df['i_e1_d1'] = lst_i_e1_d1
+    new_df['i_e1_d2'] = lst_i_e1_d2
+    new_df['i_e1_d3'] = lst_i_e1_d3
+    new_df['i_e1_d4'] = lst_i_e1_d4
+    new_df['i_e1_t1'] = lst_i_e1_t1
+    new_df['i_e1_t2'] = lst_i_e1_t2
+    new_df['i_e1_t3'] = lst_i_e1_t3
+    new_df['i_e1_t4'] = lst_i_e1_t4
+    new_df['i_e1_a1'] = lst_i_e1_a1
+    new_df['i_e1_a2'] = lst_i_e1_a2
+    new_df['i_e1_a3'] = lst_i_e1_a3
+    new_df['i_e1_a4'] = lst_i_e1_a4
+    new_df['i_e1_b1'] = lst_i_e1_b1
+    new_df['i_e1_b2'] = lst_i_e1_b2
+    new_df['i_e1_b3'] = lst_i_e1_b3
+    new_df['i_e1_b4'] = lst_i_e1_b4
+    
+
+    new_df['plv_d'] = lst_plv_d
+    new_df['plv_t'] = lst_plv_t
+    new_df['plv_a'] = lst_plv_a
+    new_df['plv_b'] = lst_plv_b 
+    new_df['label'] = seiz 
+    return new_df
+    
+    
+    
+# function to apply Discrete Wavelet Transform of a certain DB (e.g. 4 or 10) and level (e.g. 4) to the filtered eeg signal
+def apply_wavelet_transform(signal, db, level):
+    # Daubechies 10 wavelet transform with given level
+    coeffs = pywt.wavedec(signal, db, level=level)
+    #print('coeffs after apply_wavelet_transform function are: ', coeffs)
+    # cA4, cD4, cD3, cD2, cD1 = coeffs
+    return coeffs
+    
+    
+# function to collect DWT related features of a filtered EEG signal data, returns list of 35 lists
+def get_dwt_features(raw, out_fol, lst_channels_to_save, start_time, end_time, win_dur):
+    try:
+       fil_sig_for_elec = fetch_filtered_eeg_lst_chnls(raw, out_fol, lst_channels_to_save, start_time, end_time) #even 0 can be passed as start_time but in that case check what should be passed as end_time
+       #fil_sig_for_elec = get_filtered_eeg_segments(edf_file_path, lst_channels_to_save, start_time, win_dur, 0.5, 40)
+       # for all channels, take last win_dur time interval number of seconds data points for applying debauchies
+       fil_win_dur_inc_onset = fil_sig_for_elec[:, fil_sig_for_elec.shape[-1] - win_dur:fil_sig_for_elec.shape[-1]]
+       #fil_win_dur_inc_onset = fil_sig_for_elec
+       # Apply wavelet transform DB10 Level 4 only for getting permuatation entropy
+       wc_db10l4 = apply_wavelet_transform(fil_win_dur_inc_onset, 'db10', 4)
+       pd1, pd2, pd3, pd4, pd5 = get_permut_entropy(wc_db10l4[4], wc_db10l4[3], wc_db10l4[2], wc_db10l4[1], wc_db10l4[0])
+       # Apply wavelet transform DB4 Level 4 for other entropy and energy features
+       wc_db4l4 = apply_wavelet_transform(fil_win_dur_inc_onset, 'db4', 4)
+       #                                        D1,          D2,          D3,          D4,          A4
+       sh1, sh2, sh3, sh4, sh5 = get_shan_entropy(wc_db4l4[4], wc_db4l4[3], wc_db4l4[2], wc_db4l4[1], wc_db4l4[0])
+       sk1, sk2, sk3, sk4, sk5 = get_skeww(wc_db4l4[4], wc_db4l4[3], wc_db4l4[2], wc_db4l4[1], wc_db4l4[0])
+       kt1, kt2, kt3, kt4, kt5 = get_kurtosiss(wc_db4l4[4], wc_db4l4[3], wc_db4l4[2], wc_db4l4[1], wc_db4l4[0])
+       mn1, mn2, mn3, mn4, mn5 = get_meann(wc_db4l4[4], wc_db4l4[3], wc_db4l4[2], wc_db4l4[1], wc_db4l4[0])
+       st1, st2, st3, st4, st5 = get_stdd(wc_db4l4[4], wc_db4l4[3], wc_db4l4[2], wc_db4l4[1], wc_db4l4[0])
+       en1, en2, en3, en4, en5 = get_energy(wc_db4l4[4], wc_db4l4[3], wc_db4l4[2], wc_db4l4[1], wc_db4l4[0])
+       X = [pd1, pd2, pd3, pd4, pd5, sh1, sh2, sh3, sh4, sh5, sk1, sk2, sk3, sk4, sk5, kt1, kt2, kt3, kt4, kt5,
+            mn1, mn2, mn3, mn4, mn5, st1, st2, st3, st4, st5, en1, en2, en3, en4, en5]
+       # each item of this list has 19 values in each item i.e. 1 value for each electrode
+    except Exception as ex:
+       print(ex)
+    return X
+    
+    
+# function to get combination of features per electrode
+def get_lst_chnlwise_features(lst_channels_to_save):
+    # permutation entropy, shannon entropy, skewness, kurtosis, mean, standard deviation, energy
+    lst_features = ['pd1', 'pd2', 'pd3', 'pd4', 'pd5', 'sh1', 'sh2', 'sh3', 'sh4', 'sh5', 'sk1', 'sk2', 'sk3', 'sk4',
+                    'sk5',
+                    'kt1', 'kt2', 'kt3', 'kt4', 'kt5', 'mn1', 'mn2', 'mn3', 'mn4', 'mn5', 'st1', 'st2', 'st3', 'st4',
+                    'st5',
+                    'en1', 'en2', 'en3', 'en4', 'en5']
+    # constructing a list of new features to be made as columns of each of the dfs to store their values
+    lst_chnlwise_feat = []  # lst_channels_to_save is total electrodes being considered, max=19
+    for feature in lst_features:
+        for elec_ref in lst_channels_to_save:
+            elec = elec_ref.split(' ')[-1].split('-')[0]
+            lst_chnlwise_feat.append(elec + '_' + feature)
+    return lst_chnlwise_feat
+    
+    
+# function to add features upon the train and test set dfs
+def add_dwt_features_to_df(df, lst_channels_to_save, lst_chnlwise_feat, win_dur, seiz_onset):
+    lst_excp, temp_uid = [], ''
+    # first we add all 665 columns as empty columns and later update values row-wise
+    df = df.reindex(df.columns.tolist() + lst_chnlwise_feat, axis=1)
+    for index, row in df.iterrows():
+        temp_uid = row.uid
+        raw = load_notch_filtered_eeg(row.file_path.replace('.csv','.edf').replace('.csv_bi','.edf')) #commented on 8th Nov
+        try:
+            #commented on 8th Nov
+            F = get_dwt_features(raw, 'none', lst_channels_to_save, math.floor(row.win_start_tm), math.floor(row.win_start_tm + win_dur), win_dur)
+            lst_chnlwise_feat_val = []
+            for lst_item in F:
+                for ch_feat_val in lst_item:
+                    lst_chnlwise_feat_val.append(ch_feat_val)
+            for i in range(len(lst_chnlwise_feat)):
+                df.at[index, lst_chnlwise_feat[i]] = lst_chnlwise_feat_val[i]
+        except Exception as ex:
+            lst_excp.append(temp_uid)
+            pass
+    df['label'] = seiz_onset
+    return df, lst_excp
+    
+    
+# function to get dwt features added in the dfs
+def get_dwt_added_features_in_dfs(fnsz_onset_features_test_df, fnsz_onset_features_train_df, non_seiz_features_test_df,
+                                  non_seiz_features_train_df, lst_channels_to_save, output_folder_path, win_dur):
+    # list of features based on dwt column names per electrode for all selected electrodes
+    lst_chnlwise_feat = get_lst_chnlwise_features(lst_channels_to_save)
+    
+    # get dfs with added dwt features, additionally get exception description if got any while making the features
+    # sz test
+    fnsz_onset_dwt_feat_test_df, lst_excp_seiz_test = add_dwt_features_to_df(fnsz_onset_features_test_df,
+                                                                             lst_channels_to_save, lst_chnlwise_feat,
+                                                                             win_dur, 1)
+    # due to exceptions, some columns may get NaN values, so we need to remove such rows from the dfs
+    valid_fnsz_onset_dwt_feat_test_df = fnsz_onset_dwt_feat_test_df.loc[
+        ~fnsz_onset_dwt_feat_test_df['uid'].isin(lst_excp_seiz_test)]  # 1 record with NaN removed
+    # save the dwt features for each test train dfs of the seizure non-seizure
+    valid_fnsz_onset_dwt_feat_test_df.to_pickle(output_folder_path + 'w6_s2_sz_test_dwt.pkl')
+
+    #sz train
+    fnsz_onset_dwt_feat_train_df, lst_excp_seiz_train = add_dwt_features_to_df(fnsz_onset_features_train_df, lst_channels_to_save, lst_chnlwise_feat, win_dur, 1)
+    valid_fnsz_onset_dwt_feat_train_df = fnsz_onset_dwt_feat_train_df.loc[
+        ~fnsz_onset_dwt_feat_train_df['uid'].isin(lst_excp_seiz_train)]  # 8 record with NaN removed
+    valid_fnsz_onset_dwt_feat_train_df.to_pickle(output_folder_path + 'w6_s2_sz_train_dwt.pkl')
+
+    #ns test
+    non_seiz_dwt_feat_test_df, lst_excp_non_seiz_test = add_dwt_features_to_df(non_seiz_features_test_df, lst_channels_to_save, lst_chnlwise_feat, win_dur, 0)
+    valid_non_seiz_dwt_feat_test_df = non_seiz_dwt_feat_test_df.loc[
+        ~non_seiz_dwt_feat_test_df['uid'].isin(lst_excp_non_seiz_test)]  # 81 record with NaN removed
+    valid_non_seiz_dwt_feat_test_df.to_pickle(output_folder_path + 'w6_s2_ns_test_dwt.pkl')
+
+    #ns train
+    non_seiz_dwt_feat_train_df, lst_excp_non_seiz_train = add_dwt_features_to_df(non_seiz_features_train_df,lst_channels_to_save, lst_chnlwise_feat, win_dur, 0)
+    valid_non_seiz_dwt_feat_train_df = non_seiz_dwt_feat_train_df.loc[
+        ~non_seiz_dwt_feat_train_df['uid'].isin(lst_excp_non_seiz_train)]  # 213 record with NaN removed
+    valid_non_seiz_dwt_feat_train_df.to_pickle(output_folder_path + 'w6_s2_ns_train_dwt.pkl')
+    
+    return valid_fnsz_onset_dwt_feat_test_df, valid_fnsz_onset_dwt_feat_train_df, valid_non_seiz_dwt_feat_test_df, valid_non_seiz_dwt_feat_train_df
+    
+    
+
 

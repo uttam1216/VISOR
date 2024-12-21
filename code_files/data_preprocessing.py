@@ -75,6 +75,102 @@ def insert_data_in_postgres_tables(pat_ses_tcps):
         print(ex)
 
 
+# function to apply notch filter to EEG signals and return the noise free signal
+def load_notch_filtered_eeg(file_path):
+    raw = mne.io.read_raw_edf(file_path,preload=True)
+    raw.load_data()       
+    raw.notch_filter(freqs=60)    #50
+    return raw
+    
+    
+# func. to read edf & apply a butterworth bandpass filter & return digitalized signal inclusive of all chnls in list
+def fetch_filtered_eeg_lst_chnls(raw, output_file_path, lst_channels_to_save, start_time, end_time):
+    try:
+       #print('After applying notch_filter: ',raw)
+       #print('picking up channels: ')
+       raw.pick_channels(lst_channels_to_save)
+       #print('After picking sel. chnls: ',raw)
+    
+       # Set the time period for which you want to save the images
+       duration = end_time - start_time
+       raw.crop(tmin=start_time, tmax=end_time)
+       #print('After cropping: ',raw)
+    
+       ##raw.filter(l_freq=0.1, h_freq=64) 
+       ##print('After 0.1-64: ',raw)
+    
+       #data_ch, times = raw.get_data(picks=ref_electrode, return_times=True, start=start_time, stop=end_time)
+       #above one gives of single electrode, below one gives for a list of electrodes
+       data_ch, times = raw.get_data(picks=lst_channels_to_save, return_times=True, start=start_time, stop=end_time)
+       #print('data_ch.shape: ',data_ch.shape)
+       #print('data_ch', data_ch) #19 channels of duration 0 to start_time+6 sec
+    
+       lowcut, highcut, nyquist_freq, b_order = 0.5, 40, (raw.info['sfreq'] / 2.0) , 2
+       #print('nyquist_freq: ',nyquist_freq)
+       # b_order is order of butterworth filter
+       sos = butter(b_order, [lowcut/nyquist_freq, highcut/nyquist_freq], btype='band', output='sos')
+       #print('sos: ',sos)
+       ## Apply the filter to the signal
+       filtered_signal = sosfilt(sos, data_ch)
+       #print('filtered_signal shape: ',filtered_signal.shape) #17 channels of duration 0 to start_time+6 sec
+       #print('filtered_signal: ', filtered_signal)
+       #break
+       #np_arr = np.array(filtered_signal[0])
+       return filtered_signal
+    except Exception as ex:
+       #print('Exception came for file and start & end times: ',edf_file_path, start_time, end_time)
+       print(ex)
+       pass
+
+
+# create a func that takes a df and returns a df with new windows that are t seconds apart
+def compose_shifted_windows(df, win_dur, shift):
+    # df is original df, win_dur is the duration of one window in sec, shift is the shift in sec
+    new_rows = []
+    
+    for index, row in df.iterrows():
+        # First calculation of start_time and uid
+        first_start_time = math.floor(row['start_time'] - win_dur / 2)
+        first_uid = row['uid'].replace(row['uid'].split('__')[-1], str(first_start_time))
+        
+        # Second calculation of start_time and uid
+        second_start_time = math.floor(row['start_time'] - win_dur / 2 + min(shift, win_dur / 2))
+        second_uid = row['uid'].replace(row['uid'].split('__')[-1], str(second_start_time))
+        
+        # Create new rows retaining only 'pstrst', 'file_path', 'uid', 'start_time'
+        first_row = {
+            'pstrst': row['pstrst'],
+            'file_path': row['file_path'],
+            'uid': first_uid,
+            'start_time': first_start_time
+        }
+        
+        second_row = {
+            'pstrst': row['pstrst'],
+            'file_path': row['file_path'],
+            'uid': second_uid,
+            'start_time': second_start_time
+        }
+        
+        # Append both rows to the list of new rows
+        new_rows.append(first_row)
+        new_rows.append(second_row)
+    
+    # Create a new DataFrame with the updated rows
+    reformed_df = pd.DataFrame(new_rows)
+    
+    return reformed_df
+    
+# func to return time interval with shift  
+def get_win_with_shift(sz_test_df,sz_train_df,ns_test_df,ns_train_df,win_dur,shift):
+    sz_test_with_w_s_df  = compose_shifted_windows(sz_test_df,win_dur,shift)
+    sz_train_with_w_s_df = compose_shifted_windows(sz_train_df,win_dur,shift)
+    ns_test_with_w_s_df  = compose_shifted_windows(ns_test_df,win_dur,shift)
+    ns_train_with_w_s_df = compose_shifted_windows(ns_train_df,win_dur,shift)
+    return sz_test_with_w_s_df, sz_train_with_w_s_df, ns_test_with_w_s_df, ns_train_with_w_s_df 
+       
+ 
+
 # function for data clean up and also to add some statistical columns for further EDA
 def process_data_cleanup_and_stats(fnsz_channel_df, term_df, output_folder_path):
     fnsz_channel_df = fnsz_channel_df.loc[fnsz_channel_df['start_time'] < fnsz_channel_df['stop_time']]
