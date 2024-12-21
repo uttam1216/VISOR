@@ -15,7 +15,7 @@ Installation: All Python packages can be installed by running the following comm
 
 <b> Feature Extraction: </b> <br> Once you have the preprocessed data, the respective features can be extracted from it by running the following command in your terminal: <br>
 <b> <i> python3 feature_extraction.py train_test_folder_path output_folder_path time_interval_window_length eeg_graph_nodes </i> </b> <br>
-where train_test_folder_path is the path where you have the preprocessed data with train test files; output_folder_path is the path where you want to keep the files with extracted features; time_interval_window_length is an optional time interval window (6sec, 8sec, 10sec, 12sec or any time interval window (>=6 sec) of your choice for which you would like to run this model, default is 6 sec; and eeg_graph_nodes is the list of all nodes for which you would like to run our model, e.g. ['T3', 'T5', 'T4', 'T6'] or ['C3', 'CZ', 'C4'] or ['',''...''] which exists in our EEG Graph based on standard international 10-20 system for electrodes placement on human scalp for EEG recording. <br> 
+where train_test_folder_path is the path where you have the preprocessed data with train test files; output_folder_path is the path where you want to keep the files with extracted features; time_interval_window_length is an optional time interval window (6sec, 8sec, 10sec, 12sec or any time interval window (>=6 sec) of your choice for which you would like to run this model, default is 6 sec; and eeg_graph_nodes is the list of all nodes for which you would like to run our model, e.g. ['T3', 'T5', 'T4', 'T6'] or ['C3', 'CZ', 'C4'] or ['',''...''] which exists in our EEG Graph based on standard international 10-20 system for electrodes placement on human scalp for EEG recording. There are many functions in this script which takes in a pandas dataframe and returns the dataframe after enriching it with desired features. These can be better called and visualized from a jupyter notebook. While our original data processing and feature extraction work was done on jupyter notebook, due to data security reasons exact notebook cannot be shared but with all the functions described, a notebook can be easily made depicting good flow of data for model input pipeline.  <br> 
 
 <b> Detection Model: </b> <br> Once you have the features extracted, the model can be run by running the following command in the terminal: <br>
 <b> <i> python3 model.py train_dataset_path test_dataset_path num_epochs </i> </b> <br>
@@ -23,4 +23,5 @@ such that train_dataset_path is the path where training data is kept, test_datas
 
 <b> code_files </b> contains Python codes for data_preprocessing, feature extraction, model and an utilities file with many common functions.  <br>
 <b> data_files </b> contains a Readme.txt file with instructions. <br>
+<b> Issues if any, can be raised on github and will be resolved and answered as soon as possible. <br>
 
