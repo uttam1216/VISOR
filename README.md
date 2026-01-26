@@ -1,10 +1,11 @@
 # VISOR
 VIsual Seizure Onset detection peRsonalized for epilepsy patients <br>
 
+Disclaimer: This software is not intended for placement on the market but is intended exclusively for research applications.
+
 <b>Notes: </b> <br>
-1) All codes shared in this repository have been developed from scratch and are not copied from anywhere. Codes have rich comments, assisting in full reproducibility. <br>
-2) Due to a Non-Disclosure Agreement (NDA) signed, no part of the TUH EEG Seizure Data used in this work has been shared in any form, and thus it is not possible to share the original notebook with the EDA and Model results of this work. However, the full data can be downloaded from - https://isip.piconepress.com/projects/tuh_eeg/downloads/tuh_eeg_seizure/v2.0.0/   after signing a NDA with the data provider. <br>
-3) Given the data, by following the below instructions, the codes provided can be run to exactly reach the results depicted in the submitted paper. <br>
+1) Due to a Non-Disclosure Agreement (NDA) signed, no part of the TUH EEG Seizure Data used in this work has been shared in any form, and thus it is not possible to share the original notebook with the EDA and Model results of this work. However, the full data can be downloaded from - https://isip.piconepress.com/projects/tuh_eeg/downloads/tuh_eeg_seizure/v2.0.0/   after signing a NDA with the data provider. <br>
+2) Given the data, by following the below instructions, the codes provided can be run to exactly reach the results depicted in the submitted paper. <br>
 
 <b> Repository Usage: </b> <br>
 Installation: All Python packages can be installed by running the following command in your terminal- <br>
