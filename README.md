@@ -1,7 +1,7 @@
 # VISOR
 VIsual Seizure Onset detection peRsonalized for epilepsy patients <br>
 
-Disclaimer: This software is not intended for placement on the market but is intended exclusively for research applications.
+<b>Disclaimer: </b> This software is not intended for placement on the market but is intended exclusively for research applications.
 
 <b>Notes: </b> <br>
 1) Due to a Non-Disclosure Agreement (NDA) signed, no part of the TUH EEG Seizure Data used in this work has been shared in any form, and thus it is not possible to share the original notebook with the EDA and Model results of this work. However, the full data can be downloaded from - https://isip.piconepress.com/projects/tuh_eeg/downloads/tuh_eeg_seizure/v2.0.0/   after signing a NDA with the data provider. <br>
