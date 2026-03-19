@@ -11,10 +11,20 @@ VIsual Seizure Onset detection peRsonalized for epilepsy patients <br>
 Installation: All Python packages can be installed by running the following command in your terminal- <br>
 <b> <i> pip install -r requirements.txt </i> </b> <br>
 
-<b> Data Preprocessing: </b> <br> Once you have the TUH EEG Seizure corpus at a location -<input_folder_path> and you are willing to keep all the processed data files at a location <output_folder_path>, then the data can be preprocessed by running the following command in your terminal- <br>
-<b> <i> python3 data_preprocessing.py input_folder_path output_folder_path </i> </b> <br>
+<b> Loading TUH  Seizure Annotations: </b> <br>
+The following python command will load all seizure annotations needed for data processing in a postgresql database (install if not existing) for easy and faster data processing later:
+<b> <i> python3 load_tuh_metadata_sqlalchemy.py tuh_eeg_sz_filepath  </i> </b> <br>
+where an example format of tuh_eeg_sz_filepath (as present in my disk after download from the TUH dataset authors) is: "/media/data/TUHEEG/tuh_eeg_seizure/v2.0.0/edf/*"
 
-<b> Feature Extraction: </b> <br> Once you have the preprocessed data, the respective features can be extracted from it by running the following command in your terminal: <br>
+<b> Data Preprocessing: </b> <br> Once you have the TUH EEG Seizure corpus along with the seizure annotated times present in the freshly created postgresql db achieved via previous script run, by running the following command, eeg segments for seizure-onsets and non-seizure gets created at a location eeg_filepath <br>
+<b> <i> python3 generate_fnsz_eeg_segments.py eeg_filepath </i> </b> <br>
+where eeg_filepath is of format src+'eeg_segments', src='/media/data/ukumar/iBehave/data_files/feb25/' or wherever you want to make a parent folder for all processes; additionally the length of eeg segments required (in seconds) and the stride for moving window (in seconds) can be given along after the input_eeg_filepath argument. By default these values are set to have 8 sec and 1 sec respectively. <br>
+After this we normalize the generated eeg_segments on per-channel per-patient basis using the following command giving a location for saving the normalized segments. <br> 
+<b> <i> python3 normalize_eeg_segments.py eeg_filepath </i> </b> <br>
+where eeg_filepath is of format src+'eeg_segments'. This saves the normalized eeg segments in same parent folder src, where the earlier eeg_segments existed with the name of folder as normalized_eeg_segments and is now ready for creating train test split and/or all types of feature extraction <br>
+
+
+<b> Feature Extraction: </b> <br> Once you have the normalized EEG segments at a location input_folder_path that mainly refers to location of <normalized_eeg_segments> and you are willing to keep all the processed data files at a location <output_folder_path>, respective features can be extracted from it by running the following command in your terminal: <br>
 <b> <i> python3 feature_extraction.py train_test_folder_path output_folder_path time_interval_window_length eeg_graph_nodes </i> </b> <br>
 where train_test_folder_path is the path where you have the preprocessed data with train test files; output_folder_path is the path where you want to keep the files with extracted features; time_interval_window_length is an optional time interval window (6sec, 8sec, 10sec, 12sec or any time interval window (>=6 sec) of your choice for which you would like to run this model, default is 6 sec; and eeg_graph_nodes is the list of all nodes for which you would like to run our model, e.g. ['T3', 'T5', 'T4', 'T6'] or ['C3', 'CZ', 'C4'] or ['',''...''] which exists in our EEG Graph based on standard international 10-20 system for electrodes placement on human scalp for EEG recording. <br> 
 
