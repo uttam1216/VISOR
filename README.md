@@ -1,11 +1,10 @@
 # VISOR
 VIsual Seizure Onset detection peRsonalized for epilepsy patients <br>
 
-<b>Disclaimer: This software is not intended for placement on the market but is intended exclusively for research applications. </b>
 If you use the source code in your research, please cite our paper: Kumar, U., Yu, R., Wenzel, M., Demidova, E. (2025). VISOR: VIsual Seizure Onset Detection PeRsonalized for Epilepsy Patients. In: Wu, X., et al. Advances in Knowledge Discovery and Data Mining. PAKDD 2025. Lecture Notes in Computer Science (LNCS), vol 15871. Springer, Singapore. https://doi.org/10.1007/978-981-96-8173-0_38
 
 <b>Notes: </b> <br>
-1) Due to a Non-Disclosure Agreement (NDA) signed, no part of the TUH EEG Seizure Data used in this work has been shared in any form, and thus it is not possible to share the original notebook with the EDA and Model results of this work. However, the full data can be downloaded from - https://isip.piconepress.com/projects/tuh_eeg/downloads/tuh_eeg_seizure/v2.0.0/   after signing a NDA with the data provider. <br>
+1) This repository does not contain any data. We used TUH Seizure (TUSZ) dataset v2.0.0 for our research. To access this data, please directly contact the TUH Seizure (TUSZ) dataset author whose reference is: "Shah, V., et al.: The temple university hospital seizure detection corpus. Front. Neuroinform. 12, 83 (2018)" <br>
 2) Given the data, by following the below instructions, the codes provided can be run to exactly reach the results depicted in the submitted paper. <br>
 
 <b> Repository Usage: </b> <br>
@@ -38,7 +37,9 @@ such that train_dataset_path is the path where training data is kept, test_datas
 <b> code_files </b> contains Python codes for data_preprocessing, feature extraction, model and an utilities file with many common functions.  <br>
 <b> data_files </b> contains a Readme.txt file with instructions. <br>
 
-<b>Affiliations: </b> The source code is being published in affiliation with University of Bonn (https://www.uni-bonn.de/de) and the Lamarr Institute (https://lamarr-institute.org/). 
+<b>Disclaimer:</b>  This software is published only to support reproducibility in research. It is not intended for any type of commercial use or placement on the market.
 
-<b>Acknowledgements: </b> This work was partially funded by the Ministry of Culture and Science of the State of North Rhine-Westphalia, Germany (“iBehave”).
+<b>Affiliations: </b> The source code is being published in affiliation with the University of Bonn (https://www.uni-bonn.de/de). 
+
+<b>Acknowledgements: </b> This work was partially funded by the Ministry of Culture and Science of the State of North Rhine-Westphalia, Germany (“iBehave”)  and the Lamarr Institute for Machine Learning and Artificial Intelligence (https://lamarr-institute.org/).
 
