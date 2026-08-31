@@ -2,7 +2,7 @@
 VIsual Seizure Onset detection peRsonalized for epilepsy patients <br>
 
 The code in this repository is an implementation of our published approach: <br>
-Kumar, U., Yu, R., Wenzel, M., Demidova, E. (2025). VISOR: VIsual Seizure Onset Detection PeRsonalized for Epilepsy Patients. In: Wu, X., et al. Advances in Knowledge Discovery and Data Mining. PAKDD 2025. Lecture Notes in Computer Science (LNCS), vol 15871. Springer, Singapore. https://doi.org/10.1007/978-981-96-8173-0_38 <br>
+Uttam Kumar, Ran Yu, Michael Wenzel, and Elena Demidova. “VISOR:VIsual Seizure Onset Detection PeRsonalized for Epilepsy Patients”. In: Proceedings of the 29th Pacific-Asia Conference on Knowledge Discovery and Data Mining, PAKDD 2025. LNAI. Springer, 2025, pp. 482–494. https://doi.org/10.1007/978-981-96-8173-0_38 <br>
 If you use the source code in your research, please cite our paper.
 
 <b>Notes: </b> <br>
