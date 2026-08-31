@@ -1,7 +1,7 @@
 # VISOR
 VIsual Seizure Onset detection peRsonalized for epilepsy patients <br>
 
-<b>Disclaimer: This software is not intended for placement on the market but is intended exclusively for research applications. The source code is being published in affiliation with University of Bonn (https://www.uni-bonn.de/de) and the Lamarr Institute (https://lamarr-institute.org/). This work was partially funded by the Ministry of Culture and Science of the State of North Rhine-Westphalia, Germany (“iBehave”). </b>
+<b>Disclaimer: This software is not intended for placement on the market but is intended exclusively for research applications. </b>
 If you use the source code in your research, please cite our paper: Kumar, U., Yu, R., Wenzel, M., Demidova, E. (2025). VISOR: VIsual Seizure Onset Detection PeRsonalized for Epilepsy Patients. In: Wu, X., et al. Advances in Knowledge Discovery and Data Mining. PAKDD 2025. Lecture Notes in Computer Science (LNCS), vol 15871. Springer, Singapore. https://doi.org/10.1007/978-981-96-8173-0_38
 
 <b>Notes: </b> <br>
@@ -33,8 +33,12 @@ There are many functions in this <b> feature_extraction.py </b> and also in <b> 
 
 <b> Detection Model: </b> <br> Once you have the features extracted, the model can be run by running the following command in the terminal: <br>
 <b> <i> python3 model.py train_dataset_path test_dataset_path num_epochs </i> </b> <br>
-such that train_dataset_path is the path where training data is kept, test_dataset_path is the location of the test dataset, and num_epochs is an optional parameter giving the number of epochs for which you want to train the model. To change other parameters of the model, code can be changed in model.py for further research and experiments. <br>
+such that train_dataset_path is the path where training data is kept, test_dataset_path is the location of the test dataset, and num_epochs is an optional parameter giving the number of epochs for which you want to train the model. To change other parameters of the model, code can be changed in model.py for further research and experiments. <br> 
 
 <b> code_files </b> contains Python codes for data_preprocessing, feature extraction, model and an utilities file with many common functions.  <br>
 <b> data_files </b> contains a Readme.txt file with instructions. <br>
+
+<b>Affiliations: </b> The source code is being published in affiliation with University of Bonn (https://www.uni-bonn.de/de) and the Lamarr Institute (https://lamarr-institute.org/). 
+
+<b>Acknowledgements: </b> This work was partially funded by the Ministry of Culture and Science of the State of North Rhine-Westphalia, Germany (“iBehave”).
 
