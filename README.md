@@ -6,8 +6,10 @@ Uttam Kumar, Ran Yu, Michael Wenzel, and Elena Demidova. “VISOR:VIsual Seizure
 If you use the source code in your research, please cite our paper.
 
 <b>Notes: </b> <br>
-1) This repository does not contain any data. We used TUH Seizure (TUSZ) dataset v2.0.0 for our research. To access this data, please directly contact the TUH Seizure (TUSZ) dataset author whose reference is: "Shah, V., et al.: The temple university hospital seizure detection corpus. Front. Neuroinform. 12, 83 (2018)" <br>
+1) This repository does not contain any data. We used TUH Seizure (TUSZ) dataset v2.0.0 for our research. To access this data, please directly contact the TUH Seizure (TUSZ) dataset author: "Shah, V., et al.: The temple university hospital seizure detection corpus. Front. Neuroinform. 12, 83 (2018)" <br>
 2) Given the data, by following the below instructions, the codes provided can be run to exactly reach the results depicted in the submitted paper. <br>
+
+<b>Introduction: </b> The provided software detects focal epileptic seizure onsets in future timestamps of EEG for the patients whose earlier EEG timesteps have been used in training of the model.
 
 <b> Repository Usage: </b> <br>
 Installation: All Python packages can be installed by running the following command in your terminal- <br>
